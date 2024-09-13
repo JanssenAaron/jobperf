@@ -27,19 +27,22 @@ var (
 	buildDate    = "unknown"
 )
 
-var sampleRate = flag.Duration("rate", 2*time.Second, "Node polling rate")
-var watch = flag.Bool("w", false, "Periodically poll current status from each node.")
-var debug = flag.Bool("debug", false, "Enable debug logging.")
-var engineFlag = flag.String("engine", "auto", "Which job engine to use (pbs/slurm/auto).")
-var nodeStatsMode = flag.Bool("nodestats", false, "Starts jobperf in 'nodestats' mode where it operates as a stat collection server. This is not intended to be used directly by users.")
-var record = flag.Bool("record", false, "Enables record mode and records stats to an sqlite db.")
-var load = flag.Bool("load", false, "Load job and stats recorded to DB rather than job engine.")
-var useHTTPServer = flag.Bool("http", false, "Display stats in http server.")
-var httpServerPort = flag.Int("http-port", 0, "Display stats in http server. The default is to automatically pick a free port.")
-var httpDisableAuth = flag.Bool("http-disable-auth", false, "Disable authentication (allows anyone to connect to the http server and see the job status).")
-var showVersion = flag.Bool("version", false, "Show version and exit.")
-var showLicense = flag.Bool("license", false, "Show license and exit.")
-var recordFilename string
+var (
+	sampleRate      = flag.Duration("rate", 2*time.Second, "Node polling rate")
+	watch           = flag.Bool("w", false, "Periodically poll current status from each node.")
+	debug           = flag.Bool("debug", false, "Enable debug logging.")
+	engineFlag      = flag.String("engine", "auto", "Which job engine to use (pbs/slurm/auto).")
+	nodeStatsMode   = flag.Bool("nodestats", false, "Starts jobperf in 'nodestats' mode where it operates as a stat collection server. This is not intended to be used directly by users.")
+	record          = flag.Bool("record", false, "Enables record mode and records stats to an sqlite db.")
+	load            = flag.Bool("load", false, "Load job and stats recorded to DB rather than job engine.")
+	useHTTPServer   = flag.Bool("http", false, "Display stats in http server.")
+	httpServerPort  = flag.Int("http-port", 0, "Display stats in http server. The default is to automatically pick a free port.")
+	httpDisableAuth = flag.Bool("http-disable-auth", false, "Disable authentication (allows anyone to connect to the http server and see the job status).")
+	showVersion     = flag.Bool("version", false, "Show version and exit.")
+	showLicense     = flag.Bool("license", false, "Show license and exit.")
+	logFile         = flag.String("logfile", "", "Should log to file")
+	recordFilename  string
+)
 
 func init() {
 	homeDir, err := os.UserHomeDir()
@@ -147,7 +150,6 @@ func (a *app) updateNodeStats() error {
 				a.stats[host].gpuStats[s.ID] = append(a.stats[host].gpuStats[s.ID], s)
 
 			}
-
 		}(a.job.Nodes[i].Hostname, i)
 	}
 	slog.Debug("waiting for all node stats...")
@@ -287,7 +289,7 @@ func (a *app) printAvgNodeStats() {
 	for _, n := range a.job.Nodes {
 		nodeStats := a.stats[n.Hostname]
 		stat := nodeStats.cpuMem[len(nodeStats.cpuMem)-1]
-		//stat := n.Stats[len(n.Stats)-1]
+		// stat := n.Stats[len(n.Stats)-1]
 		coresUsed := float64(stat.CPUTime) / float64(stat.SampleTime.Sub(a.job.StartTime))
 		coresUsedPer := fmt.Sprintf("%0.2f %%", float64(coresUsed)/float64(n.NCores)*100.0)
 		memUsedPer := fmt.Sprintf("%0.2f %%", float64(stat.MaxMemoryUsedBytes)/float64(n.Memory)*100.0)
@@ -305,6 +307,7 @@ func (a *app) printAvgNodeStats() {
 		fmt.Println()
 	}
 }
+
 func (a *app) printCurrentNodeStats() {
 	a.statsMu.RLock()
 	defer a.statsMu.RUnlock()
@@ -320,8 +323,8 @@ func (a *app) printCurrentNodeStats() {
 		nodeStats := a.stats[n.Hostname]
 		stat1 := nodeStats.cpuMem[len(nodeStats.cpuMem)-1]
 		stat2 := nodeStats.cpuMem[len(nodeStats.cpuMem)-2]
-		//stat1 := n.Stats[len(n.Stats)-1]
-		//stat2 := n.Stats[len(n.Stats)-2]
+		// stat1 := n.Stats[len(n.Stats)-1]
+		// stat2 := n.Stats[len(n.Stats)-2]
 		coresUsed := float64(stat1.CPUTime-stat2.CPUTime) / float64(stat1.SampleTime.Sub(stat2.SampleTime))
 		coresUsedPer := fmt.Sprintf("%0.2f %%", float64(coresUsed)/float64(n.NCores)*100.0)
 		maxMemUsedPer := fmt.Sprintf("%0.2f %%", float64(stat1.MaxMemoryUsedBytes)/float64(n.Memory)*100.0)
@@ -538,7 +541,6 @@ func (a *app) getJobIDAndUpdateEngine(args []string) string {
 	}
 
 	return jobID
-
 }
 
 func main() {

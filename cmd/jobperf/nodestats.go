@@ -18,7 +18,7 @@ import (
 
 func getCGroupMetric(cgroupName, metricType, metricName string) (int64, error) {
 	slog.Debug("reading cgroup metric", "cgroupName", cgroupName, "metricType", metricType, "metricName", metricName)
-	fileName := fmt.Sprintf("/sys/fs/cgroup/%s/%s/%s", metricType, cgroupName, metricName)
+	fileName := fmt.Sprintf("/sys/fs/cgroup/%s/%s/%s", metricType,cgroupName,metricName)
 	metricStr, err := os.ReadFile(fileName)
 	if err != nil {
 		return 0, fmt.Errorf("failed to read metric file %v: %w", fileName, err)
@@ -29,12 +29,11 @@ func getCGroupMetric(cgroupName, metricType, metricName string) (int64, error) {
 	}
 	slog.Debug("cgroup reading result", "cgroupName", cgroupName, "metricType", metricType, "metricName", metricName, "result", metricInt)
 	return metricInt, nil
-
 }
 
 func getCPUMemStatsForCGroup(cgroup string) (*jobperf.NodeStatsCPUMem, error) {
 	var stat jobperf.NodeStatsCPUMem
-	cpuTimeInt, err := getCGroupMetric(cgroup, "cpu", "cpuacct.usage")
+	cpuTimeInt, err := getCGroupMetric(cgroup, "cpuacct", "cpuacct.usage")
 	if err != nil {
 		return nil, err
 	}
@@ -177,5 +176,4 @@ func runNodeStats() {
 			os.Exit(1)
 		}
 	}
-
 }

@@ -83,9 +83,11 @@ func (e jobEngine) NodeStatsSession(j *jobperf.Job, hostname string) (jobperf.No
 
 	return &statsSession, nil
 }
+
 func (_ jobEngine) Warning() string {
 	return ""
 }
+
 func (_ jobEngine) NodeStatsWarning() string {
 	return ""
 }
@@ -155,7 +157,6 @@ func (s *nodeStatsSession) Close() error {
 }
 
 func connectToNode(host string, username string) (*ssh.Client, error) {
-
 	user, err := user.Lookup(username)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch user info for user %s: %w", username, err)
@@ -163,15 +164,25 @@ func connectToNode(host string, username string) (*ssh.Client, error) {
 	if user.HomeDir == "" {
 		return nil, fmt.Errorf("user %s is missing home directory", username)
 	}
-	keyFile := fmt.Sprintf("%s/.ssh/id_rsa", user.HomeDir)
-	key, err := os.ReadFile(keyFile)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read private key %s: %w", keyFile, err)
+	keyFiles := []string{"id_rsa", "id_ecdsa", "id_ecdsa_sk", "id_ed25519", "id_ed25519_sk", "id_dsa"}
+	var key []byte
+        var keyFilepath string
+	for _, keyType := range keyFiles {
+		keyFile := fmt.Sprintf("%s/.ssh/%s", user.HomeDir, keyType)
+		key, err = os.ReadFile(keyFile)
+		if err != nil {
+			slog.Info("failed to read private key %s: %w", keyFile, err)
+		} else {
+                    keyFilepath = keyFile
+                    break;
+		}
 	}
-
+	if key == nil {
+		return nil, fmt.Errorf("Failed to find ssh private key")
+	}
 	signer, err := ssh.ParsePrivateKey(key)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse private key %s: %w", keyFile, err)
+		return nil, fmt.Errorf("failed to parse private key %s: %w", keyFilepath, err)
 	}
 
 	config := &ssh.ClientConfig{
