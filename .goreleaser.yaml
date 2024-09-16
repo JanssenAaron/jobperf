@@ -6,7 +6,7 @@
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 # vim: set ts=2 sw=2 tw=0 fo=cnqoj
 
-version: 1
+version: 2
 project_name: "jobperf"
 
 before:
@@ -17,77 +17,18 @@ before:
     - go generate ./...
 
 builds:
-  - id: "generic"
+  - id: "ccast"
     main: "./cmd/jobperf"
-    binary: "jobperf-generic"
+    binary: "jobperf"
     ldflags:
       - "-X main.buildVersion={{.Version}}"
       - "-X main.buildCommit={{.Commit}}"
       - "-X main.buildDate={{.Date}}"
-    env:
-      - CGO_ENABLED=0
-    goos:
-      - linux
-    goarch:
-      - amd64
-  - id: "palmetto2"
-    main: "./cmd/jobperf"
-    binary: "jobperf-palmetto2"
-    ldflags:
-      - "-X main.buildVersion={{.Version}}"
-      - "-X main.buildCommit={{.Commit}}"
-      - "-X main.buildDate={{.Date}}"
-      - "-X main.defaultSupportURL=https://docs.rcd.clemson.edu/support"
-      - "-X main.defaultDocsURL=https://docs.rcd.clemson.edu/"
+      - "-X main.defaultSupportURL=https://www.ndsu.edu/it/help/ccast/"
+      - "-X main.defaultDocsURL=https://kb.ndsu.edu/search.php?q=&cat=9114"
       - "-X main.defaultUseOpenOnDemand=true"
-      - "-X main.defaultOpenOnDemandURL=https://ondemand.rcd.clemson.edu"
-    env:
-      - CGO_ENABLED=0
-    goos:
-      - linux
-    goarch:
-      - amd64
-  - id: "palmetto"
-    main: "./cmd/jobperf"
-    binary: "jobperf-palmetto"
-    ldflags:
-      - "-X main.buildVersion={{.Version}}"
-      - "-X main.buildCommit={{.Commit}}"
-      - "-X main.buildDate={{.Date}}"
-      - "-X main.defaultSupportURL=https://docs.rcd.clemson.edu/support"
-      - "-X main.defaultDocsURL=https://docs.rcd.clemson.edu/"
-      - "-X main.defaultUseOpenOnDemand=true"
-      - "-X main.defaultOpenOnDemandURL=https://openod.palmetto.clemson.edu"
-    env:
-      - CGO_ENABLED=0
-    goos:
-      - linux
-    goarch:
-      - amd64
-  - id: "anvil"
-    main: "./cmd/jobperf"
-    binary: "jobperf-anvil"
-    ldflags:
-      - "-X main.buildVersion={{.Version}}"
-      - "-X main.buildCommit={{.Commit}}"
-      - "-X main.buildDate={{.Date}}"
-      - "-X main.defaultUseOpenOnDemand=true"
-      - "-X main.defaultOpenOnDemandURL=https://ondemand.anvil.rcac.purdue.edu"
-    env:
-      - CGO_ENABLED=0
-    goos:
-      - linux
-    goarch:
-      - amd64
-  - id: "expanse"
-    main: "./cmd/jobperf"
-    binary: "jobperf-expanse"
-    ldflags:
-      - "-X main.buildVersion={{.Version}}"
-      - "-X main.buildCommit={{.Commit}}"
-      - "-X main.buildDate={{.Date}}"
-      - "-X main.defaultUseOpenOnDemand=true"
-      - "-X main.defaultOpenOnDemandURL=https://portal.expanse.sdsc.edu"
+      - "-X main.defaultOpenOnDemandURL=https://ondemand.ccast.ndsu.edu"
+
     env:
       - CGO_ENABLED=0
     goos:
