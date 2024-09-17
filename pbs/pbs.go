@@ -166,12 +166,12 @@ func connectToNode(host string, username string) (*ssh.Client, error) {
 	}
 	keyFiles := []string{"id_rsa", "id_ecdsa", "id_ecdsa_sk", "id_ed25519", "id_ed25519_sk", "id_dsa"}
 
-	keys := make([]ssh.Signer, 6)
+	keys := make([]ssh.Signer, 0,6)
 	for _, keyType := range keyFiles {
 		keyFile := fmt.Sprintf("%s/.ssh/%s", user.HomeDir, keyType)
 		key, err := os.ReadFile(keyFile)
 		if err != nil {
-			slog.Info("failed to read private key %s: %w", keyFile, err)
+			slog.Debug("failed to read private key %s: %w", keyFile, err)
 		} else {
 
 			signer, err := ssh.ParsePrivateKey(key)
