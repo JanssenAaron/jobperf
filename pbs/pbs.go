@@ -165,30 +165,28 @@ func connectToNode(host string, username string) (*ssh.Client, error) {
 		return nil, fmt.Errorf("user %s is missing home directory", username)
 	}
 	keyFiles := []string{"id_rsa", "id_ecdsa", "id_ecdsa_sk", "id_ed25519", "id_ed25519_sk", "id_dsa"}
-	var key []byte
-        var keyFilepath string
+
+	keys := make([]ssh.Signer, 6)
 	for _, keyType := range keyFiles {
 		keyFile := fmt.Sprintf("%s/.ssh/%s", user.HomeDir, keyType)
-		key, err = os.ReadFile(keyFile)
+		key, err := os.ReadFile(keyFile)
 		if err != nil {
 			slog.Info("failed to read private key %s: %w", keyFile, err)
 		} else {
-                    keyFilepath = keyFile
-                    break;
+
+			signer, err := ssh.ParsePrivateKey(key)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse private key %s: %w", keyFile, err)
+			}
+
+			keys = append(keys, signer)
 		}
-	}
-	if key == nil {
-		return nil, fmt.Errorf("Failed to find ssh private key")
-	}
-	signer, err := ssh.ParsePrivateKey(key)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse private key %s: %w", keyFilepath, err)
 	}
 
 	config := &ssh.ClientConfig{
 		User: username,
 		Auth: []ssh.AuthMethod{
-			ssh.PublicKeys(signer),
+			ssh.PublicKeys(keys...),
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
